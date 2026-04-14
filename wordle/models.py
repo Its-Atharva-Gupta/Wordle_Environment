@@ -25,3 +25,5 @@ class WordleObservation(Observation):
     word_hints_llm: str = Field(..., description="Hints for the guessed word")
     word_hints: list[int] = Field(..., description="Hints for the guessed word in list form. 0 for grey, 1 for yellow, 2 for green  ")
     guessed_word: str = Field(..., description="The word guessed by the agent")
+    guesses_remaining: int = Field(..., description="Number of guesses remaining")
+    total_guesses: int = Field(..., description="Total number of guesses allowed")

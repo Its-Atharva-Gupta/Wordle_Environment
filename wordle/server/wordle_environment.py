@@ -74,6 +74,8 @@ class WordleEnvironment(Environment):
             word_hints_llm="Wordle environment ready!",
             word_hints=[0, 0, 0, 0, 0],
             guessed_word="",
+            guesses_remaining=self._guesses_allowed,
+            total_guesses=self._guesses_allowed,
         )
 
     def _compute_hints(self, word: str) -> tuple[list[int], list[str]]:
@@ -110,6 +112,10 @@ class WordleEnvironment(Environment):
 
         return hints, hint_messages
 
+    def _hint_reward(self, hints: list[int]) -> float:
+        """Return reward earned from a hint list: +2 per green, +1 per yellow, +0 per grey."""
+        return sum(2 if h == 2 else 1 if h == 1 else 0 for h in hints)
+
     def step(self, action: WordleAction) -> WordleObservation:  # type: ignore[override]
         """
         Execute a step in the environment.
@@ -135,18 +141,24 @@ class WordleEnvironment(Environment):
                 done=False,
                 reward=-1,
                 metadata={"original_message": word, "step": self._state.step_count},
+                guesses_remaining=self._guesses_allowed - self._current_guess_count,
+                total_guesses=self._guesses_allowed,
             )
 
         self._current_guess_count += 1
 
         if word == self.current_word:
+            guesses_remaining = self._guesses_allowed - self._current_guess_count
+            reward = self._hint_reward([2, 2, 2, 2, 2]) + guesses_remaining * 2
             return WordleObservation(
                 word_hints_llm="Correct! All letters are green. Word correctly guessed.",
                 word_hints=[2, 2, 2, 2, 2],
                 guessed_word=word,
                 done=True,
-                reward=10,
+                reward=reward,
                 metadata={"original_message": word, "step": self._state.step_count},
+                guesses_remaining=guesses_remaining,
+                total_guesses=self._guesses_allowed,
             )
 
         hints, hint_messages = self._compute_hints(word)
@@ -162,8 +174,10 @@ class WordleEnvironment(Environment):
                 word_hints=hints,
                 guessed_word=word,
                 done=True,
-                reward=-10,
+                reward=self._hint_reward(hints) - 10,
                 metadata={"original_message": word, "step": self._state.step_count},
+                guesses_remaining=0,
+                total_guesses=self._guesses_allowed,
             )
 
         llm_hints = f"Guess '{word}' received. Hints: {hint_messages}. Try again!"
@@ -172,8 +186,10 @@ class WordleEnvironment(Environment):
             word_hints=hints,
             guessed_word=word,
             done=False,
-            reward=-0.5,
+            reward=self._hint_reward(hints) - 0.5,
             metadata={"original_message": word, "step": self._state.step_count},
+            guesses_remaining=self._guesses_allowed - self._current_guess_count,
+            total_guesses=self._guesses_allowed,
         )
         
 

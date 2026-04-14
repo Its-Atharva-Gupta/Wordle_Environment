@@ -77,6 +77,8 @@ class WordleEnv(
             done=payload.get("done", False),
             reward=payload.get("reward"),
             metadata=obs_data.get("metadata", {}),
+            guesses_remaining=obs_data.get("guesses_remaining", 0),
+            total_guesses=obs_data.get("total_guesses", 0),
         )
 
         return StepResult(
