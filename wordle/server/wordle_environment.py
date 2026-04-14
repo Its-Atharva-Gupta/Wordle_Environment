@@ -18,7 +18,7 @@ from openenv.core.env_server.interfaces import Environment
 from openenv.core.env_server.types import State
 
 try:
-    from ..models import WordleAction, WordleObservation
+    from models import WordleAction, WordleObservation
 except ImportError:
     from models import WordleAction, WordleObservation
 

@@ -36,7 +36,7 @@ except Exception as e:  # pragma: no cover
     ) from e
 
 try:
-    from ..models import WordleAction, WordleObservation
+    from models import WordleAction, WordleObservation
     from .wordle_environment import WordleEnvironment
 except ModuleNotFoundError:
     from models import WordleAction, WordleObservation
